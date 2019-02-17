@@ -1,1 +1,2 @@
-# nw_nlp_project_1
+# gg-project-master
+Golden Globe Project Master
