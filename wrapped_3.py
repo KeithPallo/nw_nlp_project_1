@@ -117,7 +117,7 @@ def compare_to_kb(nominees,kb):
     """
     Takes in a dictionary of potential nominees and removes those that don't appear in a relevant KB
 
-    If no nominees are in the KB, then ... (currentlt top five)
+    If no nominees are in the KB, then ... (currently top five)
     """
 
     final_nominees = {}
