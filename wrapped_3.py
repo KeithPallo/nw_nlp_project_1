@@ -132,7 +132,7 @@ def compare_to_kb(nominees,kb):
                 award_nominees.append(j[0].lower())
 
         if not award_nominees:
-            award_nominees = [i[0].lower() for i in nominees[i][:5]]
+            award_nominees = [""]
 
         award_nominees = list(set(award_nominees))
         final_nominees[i] = award_nominees
@@ -345,7 +345,7 @@ def extract_people(data, list1):
     try:
         names = fdist.most_common()
     except:
-        names = "nothing here"
+        names = ""
 
     return names
 
@@ -392,7 +392,7 @@ def extract_media(data, list1):
         names = fdist.most_common()
 
     except:
-        names = "nothing here"
+        names = ""
 
     return names
 
@@ -439,7 +439,7 @@ def extract_presenters(data, list1, winners):
     try:
         names = fdist.most_common()
     except:
-        names = "nothing here"
+        names = ""
 
     return names
 
@@ -493,11 +493,11 @@ def get_presenters(award_list, categories_dict, tweets_dict, winners, people_kb)
                     break
 
             # account for no valid presenters from frequency distibution
-            if not found: presenters[award] = "none_found"
+            if not found: presenters[award] = ""
 
         # account for empty frequency distribution
         else:
-            presenters[award] = "none_found"
+            presenters[award] = ""
 
     return presenters
 
