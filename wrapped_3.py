@@ -232,7 +232,7 @@ def find_awards(df):
     possible = []
 
     for i in freq.most_common():
-        if i[1] >= 8: possible.append(i[0])
+        if i[1] >= 10: possible.append(i[0])
 
     return possible
 
@@ -466,6 +466,7 @@ def get_nominees(award_list, categories_dict, tweets_dict, spec = ""):
 
 
 def get_presenters(award_list, categories_dict, tweets_dict, winners, people_kb):
+    # Initialize return dictionary
     present = ['present', 'annouc', 'introduc']
 
     # Remove tweets that do not have presenters keyswords in them (currently using stemming)
@@ -486,21 +487,28 @@ def get_presenters(award_list, categories_dict, tweets_dict, winners, people_kb)
             found = False
 
             # select the most common potential presenter that is a person (from pinging people_kb)
+
+            count = 0
+            names = []
+
             for potential in all_presenters:
-                if potential[0].lower() in people_kb:
-                    presenters[award] = potential[0].lower()
-                    found = True
+                if count > potential[1]:
                     break
+                if potential[0].lower() in people_kb:
+                    names.append(potential[0].lower())
+                    count = potential[1]
+                    found = True
+
+            presenters[award] = names
 
             # account for no valid presenters from frequency distibution
-            if not found: presenters[award] = ""
+            if not found: presenters[award] = []
 
         # account for empty frequency distribution
         else:
-            presenters[award] = ""
+            presenters[award] = []
 
     return presenters
-
 
 def get_media_winners(nominees):
     final_winners = {}
@@ -540,7 +548,7 @@ def compress_associated_dict(award_list,nominees,winners,presenters):
 
     return our_dict
 
-def associated_tasks(award_list,data,spec,kb,kb2):
+def associated_tasks(award_list,data,data_presenter,spec,kb,kb2):
 
     # Create a dictionary to filter tweets at a category level
     cat_filter_dict = get_awards_dict(award_list)
@@ -564,7 +572,8 @@ def associated_tasks(award_list,data,spec,kb,kb2):
         final_winners = get_people_winners(full_nom_dict)
 
     # Get possible presenters
-    final_pres = get_presenters(award_list, cat_filter_dict, tweets_dict, final_winners,kb2)
+    tweets_pres_dict = get_all_awards_tweets(award_list, cat_filter_dict, data_presenter)
+    final_pres = get_presenters(award_list, cat_filter_dict, tweets_pres_dict, final_winners,kb2)
 
     return final_nom, final_winners,final_pres
 
@@ -575,7 +584,15 @@ def main_exec(award_list,df,kb_p,kb_m):
     Itype: kb_p and kb_m are sets for our built KB's
     """
 
+    # Presenter dataframe
+    df_presenter = df[df['text'].str.contains('present')]
+
+    sample_size = 200000
+    if len(df['text']) > sample_size:
+        df = df.sample(n=sample_size*2)
+
     data = df['text'].values.tolist()
+    data_presenter = df_presenter['text'].values.tolist()
 
 
 
@@ -585,9 +602,9 @@ def main_exec(award_list,df,kb_p,kb_m):
 
     # Call search function - winner, nominee, presenter
 
-    final_nom, final_winner,final_pres = associated_tasks(people_awards, data, "people", kb_p, kb_p)
+    final_nom, final_winner,final_pres = associated_tasks(people_awards, data, data_presenter, "people", kb_p, kb_p)
 
-    media_nom, media_winner, media_pres = associated_tasks(media_awards, data, "media", kb_m, kb_p)
+    media_nom, media_winner, media_pres = associated_tasks(media_awards, data, data_presenter,"media", kb_m, kb_p)
 
     final_nom.update(media_nom)
     final_winner.update(media_winner)
