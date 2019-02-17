@@ -99,8 +99,6 @@ def get_award_tweets(data, list1, spec = "people"):
 
     result = []
 
-    list1 = [i for i in list1 if i != 'performance' and i != 'role']
-
     for tweet in data:
         cond = True
         for i in list1:

@@ -793,6 +793,7 @@ parts
 past
 pe
 per
+performance
 perhaps
 pf
 pg
@@ -869,6 +870,7 @@ results
 right
 ring
 ro
+role
 room
 rooms
 round
