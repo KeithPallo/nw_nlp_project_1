@@ -33,7 +33,7 @@ import unidecode
 import requests
 import json
 
-from wrapped_3 import *
+from final_code import *
 
 OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
 OFFICIAL_AWARDS_1819 = ['best motion picture - drama', 'best motion picture - musical or comedy', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best performance by an actress in a motion picture - musical or comedy', 'best performance by an actor in a motion picture - musical or comedy', 'best performance by an actress in a supporting role in any motion picture', 'best performance by an actor in a supporting role in any motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best motion picture - animated', 'best motion picture - foreign language', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best television series - musical or comedy', 'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
@@ -334,12 +334,12 @@ def main(option = True):
     #     df15 = df15.sample(n=sample_size*2)
 
     # main returns
-    hosts13, awards13, nominees13, winners13, presenters13 = main_exec(OFFICIAL_AWARDS_1315,df13,people_kb,media_kb)
-    hosts15, awards15, nominees15, winners15, presenters15 = main_exec(OFFICIAL_AWARDS_1315,df15,people_kb,media_kb)
+    hosts13, awards13, nominees13, winners13, presenters13 = main_exec(OFFICIAL_AWARDS_1315,df13,people_kb,media_kb,"2013")
+    hosts15, awards15, nominees15, winners15, presenters15 = main_exec(OFFICIAL_AWARDS_1315,df15,people_kb,media_kb,"2015")
 
     if option == True:
-        hosts18, awards18, nominees18, winners18, presenters18 = main_exec(OFFICIAL_AWARDS_1819,df18,people_kb,media_kb)
-        hosts19, awards19, nominees19, winners19, presenters19 = main_exec(OFFICIAL_AWARDS_1819,df19,people_kb,media_kb)
+        hosts18, awards18, nominees18, winners18, presenters18 = main_exec(OFFICIAL_AWARDS_1819,df18,people_kb,media_kb,"2018")
+        hosts19, awards19, nominees19, winners19, presenters19 = main_exec(OFFICIAL_AWARDS_1819,df19,people_kb,media_kb,"2019")
     # hosts1819, awards1819, nominees1819, winners1819, presenters1819 = main_exec(OFFICIAL_AWARDS_1819,twitter_data,people_kb,media_kb)
 
     json_hosts13 = json.dumps(hosts13)
