@@ -196,7 +196,6 @@ def filter_df(df,label):
 
     return data, freq
 
-
 def find_awards(df):
     """
     Returns a list of strings for all possible awards
@@ -230,9 +229,47 @@ def find_awards(df):
     possible = []
 
     for i in freq.most_common():
-        if i[1] >= 10: possible.append(i[0])
+        if i[1] >= 5: possible.append(i[0])
 
     return possible
+
+# def find_awards(df):
+#     """
+#     Returns a list of strings for all possible awards
+#     """
+#     # Shuffle data if necesarry
+#     sample_size = 200000
+#     if len(df['text']) > sample_size:
+#         df = df.sample(n=sample_size)
+#
+#     # Clean awards, keep best, pos tag
+#     df_a = df[df['text'].str.contains('award')]
+#     df_a['text'] = df_a['text'].apply(lambda x:  clean_awards(x))
+#     # df_a = df[df['text'].str.contains("best")]
+#     df_a['tags'] = df['text'].apply(lambda x: find_tags(x))
+#
+#     # Define regex patterns from generalized
+#     regex_pattern_0 = "P0: {<JJ.><NN.|JJ|VBG><...?>*<NN.>}"
+#     regex_pattern_1 = "P1: {<NN.><IN|NN.|IN><...?>*<NN.>}"
+#     regex_pattern_2 = "P2: {<RB.><JJ|NN.|VGB><...?>*<NN.|JJ>}"
+#
+#     # Search for pos
+#     df_a['chunks_0'] = df_a['tags'].apply(lambda x: pos_search(x,regex_pattern_0,"P0"))
+#     df_a['chunks_1'] = df_a['tags'].apply(lambda x: pos_search(x,regex_pattern_1,"P1"))
+#     df_a['chunks_2'] = df_a['tags'].apply(lambda x: pos_search(x,regex_pattern_2,"P2"))
+#
+#     data_0, freq_0 = filter_df(df_a,"chunks_0")
+#     data_1, freq_1 = filter_df(df_a,"chunks_1")
+#     data_2, freq_2 = filter_df(df_a,"chunks_2")
+#
+#     freq = freq_0 + freq_1 + freq_2
+#
+#     possible = []
+#
+#     for i in freq.most_common():
+#         if i[1] >= 2: possible.append(i[0])
+#
+#     return possible
 
 
 # # Hosts Function ---------------------------------------
@@ -405,7 +442,11 @@ def extract_presenters(data, list1, winners):
 
     translator = str.maketrans('', '', string.punctuation)
     remove_terms = ['#goldenglobes', 'golden globes', '#goldenglobe', 'golden globe', 'goldenglobes', 'goldenglobe', 'golden', 'globe', 'globes']
-    stop = remove_terms + list1 + winners.split()
+
+    if winners:
+        stop = remove_terms + list1 + winners.split()
+    else:
+        stop = remove_terms + list1
 
     for tweet in data:
 
@@ -533,6 +574,7 @@ def get_people_winners(nominees):
         final_winners[award] = winner.lower()
 
     return final_winners
+
 
 
 def get_dressed(data, kb):
@@ -702,9 +744,9 @@ def main_exec(award_list,df,kb_p,kb_m):
     # Presenter dataframe
     df_presenter = df[df['text'].str.contains('present')]
 
-    sample_size = 200000
+    sample_size = 400000
     if len(df['text']) > sample_size:
-        df = df.sample(n=sample_size*2)
+        df = df.sample(n=sample_size)
 
     data = df['text'].values.tolist()
     data_presenter = df_presenter['text'].values.tolist()
