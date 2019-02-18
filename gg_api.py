@@ -1,18 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-# Command line functions
-
-# Pre-ceremony call
-# python -c 'import PleaseWork; PleaseWork.pre_ceremony()'
-
-# Main function call
-# python -c 'import gg_api_current; gg_api_current.main(option=False)'
-
-# Autograder call
-# python autograder.py
 
 import pandas as pd
 import numpy as np
@@ -313,9 +301,11 @@ def main(option = True):
     what it returns.'''
     # Your code here
     df13 = pd.read_json('gg2013.json')
-    df15 = pd.read_json('../gg2015.json')
-    #df18 = pd.read_json('gg2018.json')
-    #df19 = pd.read_json('gg2019.json')
+    df15 = pd.read_json('gg2015.json')
+
+    if option == True:
+        df18 = pd.read_json('gg2018.json')
+        df19 = pd.read_json('gg2019.json')
 
     with open('people_kb.json') as f:
         people_kb = json.load(f)

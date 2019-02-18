@@ -232,7 +232,7 @@ def find_awards(df):
     possible = []
 
     for i in freq.most_common():
-        if i[1] >= 3: possible.append(i[0])
+        if i[1] >= 5: possible.append(i[0])
 
     return possible
 
@@ -286,7 +286,7 @@ def extract_hosts(data,people_kb):
         if name.lower() in people_kb:
             return_list.append(name)
 
-    if cohost > 3:
+    if cohost > 0:
         return_list = return_list[:2]
     else:
         return_list = return_list[:1]
@@ -632,6 +632,50 @@ def get_dressed(data, kb):
     return best_dressed, worst_dressed
 
 
+def get_jokes(data, media_kb):
+
+    # extract people and put in dictionary with compound scores
+    sentiment_analyzer = SentimentIntensityAnalyzer()
+    score_dict = {}
+    best_counter = Counter()
+    worst_counter = Counter()
+    for tweet in data:
+        if '@' not in tweet:
+            all_scores = sentiment_analyzer.polarity_scores(tweet)
+            for k in sorted(all_scores):
+                if k == 'compound':
+                    useful_score = all_scores[k]
+            match = re.match(r'([\"\'])(?:(?=(\\?))\2.)*?\1', tweet)
+            if match:
+                name = match.group(0).lower()
+                if useful_score > 0:
+                    if name in best_counter:
+                        best_counter[name] += useful_score
+                    else:
+                        best_counter[name] = useful_score
+                if useful_score < 0:
+                    if name in worst_counter:
+                        worst_counter[name] += useful_score
+                    else:
+                        worst_counter[name] = useful_score
+
+    best_jokes = []
+    worst_jokes = []
+
+    for i in best_counter:
+        #print(i)
+        #print(i[1:len(i)-1])
+        if i[1:len(i)-1] not in media_kb:
+            best_jokes.append(i)
+
+    for i in worst_counter:
+        #print(i[0][1:len(i)-1])
+        if i[1:len(i)-1] not in media_kb:
+            worst_jokes.append(i)
+
+    return best_jokes[:10], worst_jokes[:10]
+
+
 # # Wrapper Functions ------------------------------------
 
 
@@ -678,7 +722,7 @@ def associated_tasks(award_list,data,data_presenter,spec,kb,kb2):
     return final_nom, final_winners,final_pres
 
 
-def human_readable(year,award_list, hosts, final_nom, final_winner, final_pres, best_dressed, worst_dressed,awards):
+def human_readable(year,award_list, hosts, final_nom, final_winner, final_pres, best_dressed, worst_dressed, best_jokes, worst_jokes, awards):
 
     f = open('%s_human_readable_results.txt' % year, 'w')
     f.write('Hosts: ' + ', '.join(hosts) + '\n\n')
@@ -691,7 +735,10 @@ def human_readable(year,award_list, hosts, final_nom, final_winner, final_pres, 
         f.write('Winner: ' + final_winner[award] + '\n\n')
 
     f.write('Best Dressed: ' + ', '.join(best_dressed) + '\n')
-    f.write('Worst Dressed: ' + ', '.join(worst_dressed) + '\n')
+    f.write('Worst Dressed: ' + ', '.join(worst_dressed) + '\n\n')
+
+    f.write('Best Jokes: ' + '\n'.join(best_jokes) + '\n\n')
+    f.write('Worst Jokes: ' + '\n'.join(worst_jokes) + '\n')
 
     f.close()
 
@@ -738,6 +785,7 @@ def main_exec(award_list,df,kb_p,kb_m,year):
     awards = find_awards(df)
 
     best_dressed, worst_dressed = get_dressed(data, kb_p)
-    human_readable(year,award_list, hosts, final_nom, final_winner, final_pres, best_dressed, worst_dressed,awards)
+    best_jokes,  worst_jokes = get_jokes(data, kb_m)
+    human_readable(year,award_list, hosts, final_nom, final_winner, final_pres, best_dressed, worst_dressed, best_jokes, worst_jokes, awards)
 
     return hosts, awards, final_nom, final_winner, final_pres

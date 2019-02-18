@@ -3,7 +3,7 @@ Golden Globe Project Master
 
 # Methodology overview
 
-For an overview of our methodologies please view they methods.pdf file. 
+For an overview of our methodologies please view the overview.pptx or overview.pdf file.
 
 # Packages
 The following packages are required to run the code
@@ -35,11 +35,11 @@ The following instructions apply to running analysis on years 2013, 2015, 2018, 
 
 Pre-ceremony call - this loads in the knowledge base for our gg_api.
 
-`python3 -c 'import gg_api.py; gg_api.py.pre_ceremony()'`
+`python3 -c 'import gg_api; gg_api.pre_ceremony()'`
 
 Runs the gg_api which generates our results.
 
-`python3 -c 'import gg_api_current; gg_api.main(option)'`
+`python3 -c 'import gg_api; gg_api.main()'`
 
 Runs the autograder on our results.
 
