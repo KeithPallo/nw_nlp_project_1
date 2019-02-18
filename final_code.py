@@ -232,7 +232,7 @@ def find_awards(df):
     possible = []
 
     for i in freq.most_common():
-        if i[1] >= 5: possible.append(i[0])
+        if i[1] >= 8: possible.append(i[0])
 
     return possible
 
@@ -634,13 +634,16 @@ def get_dressed(data, kb):
 
 def get_jokes(data, media_kb):
 
+
+    funny = ['funny', 'joke', 'hilarious', 'gag', 'lol', 'lmao', 'lmfao', 'laugh', 'humor', 'punchline', 'amus']
+
     # extract people and put in dictionary with compound scores
     sentiment_analyzer = SentimentIntensityAnalyzer()
     score_dict = {}
     best_counter = Counter()
     worst_counter = Counter()
     for tweet in data:
-        if '@' not in tweet:
+        if '@' not in tweet and any(i in tweet.lower() for i in funny):
             all_scores = sentiment_analyzer.polarity_scores(tweet)
             for k in sorted(all_scores):
                 if k == 'compound':
@@ -770,7 +773,6 @@ def main_exec(award_list,df,kb_p,kb_m,year):
     # Call search function - winner, nominee, presenter
 
     final_nom, final_winner,final_pres = associated_tasks(people_awards, data, data_presenter, "people", kb_p, kb_p)
-
     media_nom, media_winner, media_pres = associated_tasks(media_awards, data, data_presenter,"media", kb_m, kb_p)
 
     final_nom.update(media_nom)
