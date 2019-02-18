@@ -239,55 +239,60 @@ def find_awards(df):
 
 # DATA PASSED IN AS LIST
 def extract_hosts(data):
-   # clean data
+    # clean data
     cleaned_data = []
-
+    
     for tweet in data:
         tt = TweetTokenizer(strip_handles=True, reduce_len=True, preserve_case=True)
-
         punctuation = list(string.punctuation)
-
-        # strip stopwords, punctuation, url components
+        # strip stopwords, punctuation, url components 
         stop = stopwords.words('english') + punctuation + ['t.co', 'http', 'https', '...', '..', ':\\', 'RT', '#']
-
         strip_nums = re.sub("\d+", "", tweet)
         tokenized = tt.tokenize(strip_nums)
         terms_stop = [term for term in tokenized if term not in stop]
         cleaned = [term for term in terms_stop]
         cleaned = ' '.join(cleaned)
         cleaned_data.append(cleaned)
-
-
+     
+    
     # find host
     include_terms = ['host', 'hosted', 'hosting', 'hosts']
     remove_terms = ['next year']
     host = [];
-    cohost = False;
-
+    cohost = 0;
     for tweet in cleaned_data:
         if any(term in tweet for term in include_terms) and any(term not in tweet for term in remove_terms):
             host.append(tweet)
         if 'cohost' in tweet:
-            cohost = True
-
+            cohost += 1
+            
     bgrams = [];
-
     for tweet in host:
         bgrams += list(nltk.bigrams(tweet.split()))
-
+        
     fdist = nltk.FreqDist(bgrams)
-
-    if cohost:
-        fdist = fdist.most_common(2)
+    
+    if cohost > 5: #and len(final_hosts) > 1:
+        fdist = fdist.most_common()
     else:
         fdist = fdist.most_common(1)
-
+    
     final_hosts = []
     for host in fdist:
         name = host[0][0] + ' ' + host[0][1]
         final_hosts.append(name)
-
-    return final_hosts
+    
+    return_list = []
+    
+    if cohost > 5:
+        for name in final_hosts:
+            if name in people_kb:
+                return_list.append(name)
+        return_list = return_list[:2]
+    else:
+        return_list.append(final_hosts[0])
+    
+    return return_list
 
 
 # # Extract Functions -------------------------------------------
@@ -530,6 +535,101 @@ def get_people_winners(nominees):
     return final_winners
 
 
+def get_dressed(data, kb):
+    
+    result = []
+       
+    translator = str.maketrans('', '', string.punctuation)
+    remove_terms = ['#goldenglobes', 'golden globes', '#goldenglobe', 'golden globe', 'goldenglobes', 'goldenglobe', 'golden', 'globe', 'globes']
+    stop = remove_terms
+    include_terms = ['dress', 'fashion', 'red', 'carpet', 'haute couture', 'gown', 'design', 'look']
+    
+    for tweet in data:
+        
+        tweet = re.sub("\d+", "", tweet)       #strip nums
+        tweet = re.sub(r'http\S+', '', tweet)  #strip urls
+        tweet = re.sub(r'#\S+', '', tweet)     #strip hashtags
+        tweet = tweet.translate(translator)    #strip non-alphanumeric characters
+
+        for i in stop:
+            for j in tweet:
+                if i.lower() in j.lower():
+                    tweet.remove(j)
+        
+        if any(term in tweet for term in include_terms):
+            result.append(tweet)
+    
+    
+    # extract people and put in dictionary with compound scores
+    sentiment_analyzer = SentimentIntensityAnalyzer()
+    score_dict = {}
+    best_dressed_dict = {}
+    worst_dressed_dict = {}
+
+    for tweet in result:
+        all_scores = sentiment_analyzer.polarity_scores(tweet)
+        for k in sorted(all_scores):
+            if k == 'compound':
+                useful_score = all_scores[k]
+
+        if tweet:
+            # Get all possible bigrams & trigrams in a tweet
+            gram = list(nltk.everygrams(tweet.split(), 2, 3))
+
+            # Filter through and append to list for tweet
+            for g in gram:
+                if len(g) == 2:
+                    if bool(re.match(r'\b[A-Z][a-z]+\b', g[0])) and bool(re.match(r'\b[A-Z][a-z]+\b', g[1])):
+                        name = ' '.join(g).lower()
+                        if useful_score > 0:
+                            if name in best_dressed_dict:
+                                best_dressed_dict[name] += useful_score
+                            else:
+                                best_dressed_dict[name] = useful_score
+                        if useful_score < 0:
+                            if name in worst_dressed_dict:
+                                worst_dressed_dict[name] += useful_score
+                            else:
+                                worst_dressed_dict[name] = useful_score
+                else:
+                    if bool(re.match(r'\b[A-Z][a-z]+\b', g[0])) and bool(re.match(r'\b[A-Z][a-z]+\b', g[1])) and bool(re.match(r'\b[A-Z][a-z]+\b', g[2])):
+                        name = ' '.join(g).lower()
+                        if useful_score > 0:
+                            if name in best_dressed_dict:
+                                best_dressed_dict[name] += useful_score
+                            else:
+                                best_dressed_dict[name] = useful_score
+                        if useful_score < 0:
+                            if name in worst_dressed_dict:
+                                worst_dressed_dict[name] += useful_score
+                            else:
+                                worst_dressed_dict[name] = useful_score
+        
+        
+    # look in kb for matches     
+    final_dict = {}
+    for best, worst in zip(best_dressed_dict, worst_dressed_dict):
+        if best.lower() in kb:
+            final_dict[best] = best_dressed_dict[best]
+        if worst.lower() in kb:
+            final_dict[worst] = worst_dressed_dict[worst]
+            
+
+    # get key with max value
+    best_dressed = []
+    worst_dressed = []
+    
+    while len(best_dressed) < 5:
+        best_person = max(final_dict.items(), key=lambda k: k[1])[0]
+        worst_person = min(final_dict.items(), key=lambda k: k[1])[0]
+        best_dressed.append(best_person)
+        worst_dressed.append(worst_person)
+        del final_dict[best_person]
+        del final_dict[worst_person]
+    
+    return best_dressed, worst_dressed
+
+
 # # Wrapper Functions ------------------------------------
 
 
@@ -576,6 +676,23 @@ def associated_tasks(award_list,data,data_presenter,spec,kb,kb2):
     return final_nom, final_winners,final_pres
 
 
+def human_readable(award_list, hosts, final_nom, final_winner, final_pres, best_dressed, worst_dressed):
+    
+    f = open("human_readable_results.txt", "w")
+    f.write('Hosts: ' + ', '.join(hosts) + '\n\n')
+    
+    for award in award_list:
+        f.write('Award: ' + award + '\n')
+        f.write('Presenters: ' + ', '.join(final_pres[award]) + '\n')
+        f.write('Nominees: ' + ', '.join(final_nom[award]) + '\n')
+        f.write('Winner: ' + final_winner[award] + '\n\n')
+        
+    f.write('Best Dressed: ' + ', '.join(best_dressed) + '\n')
+    f.write('Worst Dressed: ' + ', '.join(worst_dressed) + '\n')
+    
+    return
+
+
 def main_exec(award_list,df,kb_p,kb_m):
     """
     Main execution file - how you run the program
@@ -614,5 +731,8 @@ def main_exec(award_list,df,kb_p,kb_m):
 
     # Call award recognition function
     awards = find_awards(df)
+    
+    best_dressed, worst_dressed = get_dressed(data, kb_p)
+    human_readable(award_list, hosts, final_nom, final_winner, final_pres, best_dressed, worst_dressed)
 
     return hosts, awards, final_nom, final_winner, final_pres
